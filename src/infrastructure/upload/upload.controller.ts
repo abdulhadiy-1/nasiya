@@ -57,6 +57,7 @@ export class UploadController {
     }),
   )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('file not found');
     return {
       message: 'Файл успешно загружен',
       filename: file.filename,
