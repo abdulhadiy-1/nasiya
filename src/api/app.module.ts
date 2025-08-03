@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { PrismaModule } from '../common/prisma/prisma.module';
 import { AdminModule } from './admin/admin.module';
 import { MailModule } from 'src/common/mailer/mailer.module';
@@ -12,7 +10,7 @@ import { DebtorModule } from './debtor/debtor.module';
 import { NotificationModule } from './notification/notification.module';
 import { DebtModule } from './debt/debt.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { PaymentReminderModule } from './payment-reminder/payment-reminder.module';
+import { PaymentReminderModule } from '../infrastructure/payment-reminder/payment-reminder.module';
 import { ImgOfDebtModule } from './img-of-debt/img-of-debt.module';
 import { ImgOfDebtorModule } from './img-of-debtor/img-of-debtor.module';
 import { PhoneOfDebtorModule } from './phone-of-debtor/phone-of-debtor.module';
@@ -46,7 +44,5 @@ import { UploadModule } from 'src/infrastructure/upload/upload.module';
     }),
     UploadModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

@@ -27,8 +27,9 @@ export class DebtorController {
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({ name: 'sortBy', required: false, enum: ['createdAt', 'name'], example: 'createdAt' })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'], example: 'desc' })
-  findAll(@Query() filter: DebtorFilterDto) {
-    return this.debtorService.findAll(filter);
+  findAll(@Query() filter: DebtorFilterDto, @Req() req: Request) {
+    const userId = req['user'].id
+    return this.debtorService.findAll(filter, userId);
   }
 
   @ApiBearerAuth()

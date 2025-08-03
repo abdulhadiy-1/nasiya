@@ -240,7 +240,7 @@ export class DebtService {
           Debt: { sellerId },
         },
         include: {
-          Debtor: true,
+          Debtor: {include: {Phone: true}},
         },
         orderBy: { paidAt: 'asc' },
       });

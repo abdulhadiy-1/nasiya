@@ -37,7 +37,6 @@ export class NotificationService {
       const { limit = 10, page = 1, search } = filter;
       const where: any = { sellerId: userId };
 
-      if (debtorId) where.debtorId = debtorId;
       if (search) {
         where.message = {
           contains: search,
@@ -45,14 +44,36 @@ export class NotificationService {
         };
       }
 
-      const notifications = await this.prisma.notification.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      });
+      let notifications: any;
 
-      const total = await this.prisma.notification.count({ where });
+      if (debtorId) {
+        notifications = await this.prisma.notification.findMany({
+          where: { ...where, debtorId },
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+        });
+      } else {
+        notifications = await this.prisma.debtor.findMany({
+          where: { sellerId: userId },
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            Notification: {
+              take: 1,
+              orderBy: { createdAt: 'desc' },
+            },
+            Phone: true
+          },
+        });
+      }
+
+      const total = debtorId
+        ? await this.prisma.notification.count({
+            where: { ...where, debtorId },
+          })
+        : await this.prisma.debtor.count({ where: { sellerId: userId } });
 
       return successResponse(notifications, 'Notifications fetched', 200, {
         total,
@@ -72,7 +93,8 @@ export class NotificationService {
         where: { id },
         include: { Debtor: true, Seller: true },
       });
-      if (!notification) throw new BadRequestException('Notification not found');
+      if (!notification)
+        throw new BadRequestException('Notification not found');
 
       return successResponse(notification, 'Notification fetched', 200);
     } catch (error) {
@@ -91,7 +113,8 @@ export class NotificationService {
       const notification = await this.prisma.notification.findFirst({
         where: { id },
       });
-      if (!notification) throw new BadRequestException('notification not found');
+      if (!notification)
+        throw new BadRequestException('notification not found');
       if (notification.sellerId !== userId)
         throw new ForbiddenException('Access denied');
 

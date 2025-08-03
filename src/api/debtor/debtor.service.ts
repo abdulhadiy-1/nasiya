@@ -31,12 +31,12 @@ export class DebtorService {
     }
   }
 
-  async findAll(filter: DebtorFilterDto) {
+  async findAll(filter: DebtorFilterDto, userId: string) {
     const { search, page = 1, limit = 10, sortBy, sortOrder } = filter;
     const sortField = sortBy ?? 'createdAt';
     const direction = sortOrder ?? 'desc';
 
-    const where: any = {};
+    const where: any = {sellerId: userId};
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -53,9 +53,13 @@ export class DebtorService {
           [sortField]: direction,
         },
         include: {
-          Debt: { include: { Payment: { where: { isActive: true }, select: {amount: true} } } },
+          Debt: {
+            include: {
+              Payment: { where: { isActive: true }, select: { amount: true } },
+            },
+          },
           Seller: true,
-          Phone: true
+          Phone: true,
         },
       });
 
@@ -88,7 +92,11 @@ export class DebtorService {
       const debtor = await this.prisma.debtor.findFirst({
         where: { id },
         include: {
-          Debt: true,
+          Debt: {
+            include: {
+              Payment: {where: {isActive: true}, orderBy: {date: 'asc'}},
+            },
+          },
           ImgOfDebtor: true,
           Phone: true,
           Seller: true,
@@ -97,9 +105,24 @@ export class DebtorService {
 
       if (!debtor) throw new BadRequestException('debtor not found');
 
-      const totalAmount = debtor.Debt.reduce((acc, d) => acc + d.amount, 0);
+      const enrichedDebts = debtor.Debt.map((debt) => ({
+        ...debt,
+        totalPayments: debt.Payment.reduce(
+          (acc, payment) => acc + payment.amount,
+          0,
+        ),
+      }));
 
-      return successResponse({ ...debtor, totalAmount }, 'debtor get', 200);
+      const totalAmount = enrichedDebts.reduce(
+        (acc, debt) => acc + debt.totalPayments,
+        0,
+      );
+
+      return successResponse(
+        { ...debtor, Debt: enrichedDebts, totalAmount },
+        'debtor fetched successfully',
+        200,
+      );
     } catch (error) {
       throw new BadRequestException(`Error fetching debtor: ${error.message}`);
     }
