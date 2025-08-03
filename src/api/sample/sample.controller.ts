@@ -34,8 +34,7 @@ export class SampleController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(AdminRole.ADMIN, AdminRole.SUPER_ADMIN)
+  @UseGuards(AuthGuard)
   @Get()
   @ApiQuery({ name: 'search', required: false, type: String, description: 'Search' })
   @ApiQuery({ name: 'status', required: false, type: Boolean, description: 'Status (true/false)' })
@@ -43,8 +42,9 @@ export class SampleController {
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'limit on page', example: 10 })
   @ApiQuery({ name: 'sortBy', required: false, enum: ['createdAt', 'text'], description: 'sort by' })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'], description: 'sort order' })
-  findAll(@Query() query: SampleFilterDto) {
-    return this.sampleService.findAll(query);
+  findAll(@Query() query: SampleFilterDto, @Req() req: Request) {
+    const userId = req['user'].id
+    return this.sampleService.findAll(query, userId);
   }
 
   @ApiBearerAuth()

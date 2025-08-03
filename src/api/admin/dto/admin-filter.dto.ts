@@ -1,12 +1,9 @@
 import { IsOptional, IsEnum, IsString, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Status, AdminRole } from '@prisma/client';
+import { FilterDto } from 'src/common/dto/filter.dto';
 
-export class AdminFilterDto {
-  @IsOptional()
-  @IsString()
-  search?: string;
-
+export class AdminFilterDto extends FilterDto {
   @IsOptional()
   @IsEnum(Status)
   status?: Status;
@@ -14,18 +11,6 @@ export class AdminFilterDto {
   @IsOptional()
   @IsEnum(AdminRole)
   role?: AdminRole;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  limit?: number = 10;
 
   @IsOptional()
   @IsString()

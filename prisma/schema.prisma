@@ -37,11 +37,12 @@ model Seller {
   status       Status  @default(PENDING)
   refreshToken String?
 
-  Sample       Sample[]
-  Debtor       Debtor[]
-  Notification Notification[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  Sample         Sample[]
+  Debtor         Debtor[]
+  Notification   Notification[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  Debt           Debt[]
 }
 
 model Debtor {
@@ -52,28 +53,32 @@ model Debtor {
   sellerId String
   note     String?
 
-  Seller       Seller          @relation(fields: [sellerId], references: [id])
-  Phone        PhoneOfDebtor[]
-  ImgOfDebtor  ImgOfDebtor[]
-  Debt         Debt[]
-  Notification Notification[]
-  Payment      Payment[]
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  Seller         Seller           @relation(fields: [sellerId], references: [id])
+  Phone          PhoneOfDebtor[]
+  ImgOfDebtor    ImgOfDebtor[]
+  Debt           Debt[]
+  Notification   Notification[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  PaymentHistory PaymentHistory[]
 }
 
 model Debt {
-  id          String      @id @default(uuid())
-  productName String
-  date        DateTime
-  term        Int
-  note        String?
+  id             String           @id @default(uuid())
+  productName    String
+  date           DateTime
+  term           Int
+  note           String?
   amount         Int
-  Debtor      Debtor      @relation(fields: [debtorId], references: [id])
-  debtorId    String
-  ImgOfDebt   ImgOfDebt[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  Debtor         Debtor           @relation(fields: [debtorId], references: [id])
+  debtorId       String
+  Seller         Seller           @relation(fields: [sellerId], references: [id])
+  sellerId       String
+  ImgOfDebt      ImgOfDebt[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  Payment        Payment[]
+  PaymentHistory PaymentHistory[]
 }
 
 model PhoneOfDebtor {
@@ -128,8 +133,25 @@ model Notification {
 
 model Payment {
   id        String   @id @default(uuid())
-  Debtor    Debtor   @relation(fields: [debtorId], references: [id])
-  debtorId  String
+  Debt      Debt     @relation(fields: [debtId], references: [id])
+  debtId    String
+  amount    Int
+  month     Int
+  date      DateTime
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentHistory {
+  id       String   @id @default(uuid())
+  Debtor   Debtor   @relation(fields: [debtorId], references: [id])
+  debtorId String
+  Debt     Debt     @relation(fields: [debtId], references: [id])
+  debtId   String
+  paidAt   DateTime
+
+  amount    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

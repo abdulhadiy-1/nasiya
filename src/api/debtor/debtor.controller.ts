@@ -4,13 +4,14 @@ import { CreateDebtorDto } from './dto/create-debtor.dto';
 import { UpdateDebtorDto } from './dto/update-debtor.dto';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { Request } from 'express';
-import { ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { DebtorFilterDto } from './dto/debtor-filter.dto';
 
 @Controller('debtor')
 export class DebtorController {
   constructor(private readonly debtorService: DebtorService) {}
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Post()
   create(@Body() createDebtorDto: CreateDebtorDto, @Req() req: Request) {
@@ -18,7 +19,8 @@ export class DebtorController {
     return this.debtorService.create(createDebtorDto, userId);
   }
 
-  // @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Get()
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
@@ -29,12 +31,14 @@ export class DebtorController {
     return this.debtorService.findAll(filter);
   }
 
-  // @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.debtorService.findOne(id);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDebtorDto: UpdateDebtorDto, @Req() req: Request) {
@@ -42,6 +46,7 @@ export class DebtorController {
     return this.debtorService.update(id, updateDebtorDto, user);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: Request) {

@@ -1,25 +1,10 @@
 import { IsOptional, IsEnum, IsString, IsInt, Min, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
+import { FilterDto } from 'src/common/dto/filter.dto';
 
-export class SampleFilterDto {
-  @IsOptional()
-  @IsString()
-  search?: string;
-
+export class SampleFilterDto extends FilterDto {
   @IsOptional()
   status?: boolean;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  limit?: number = 10;
 
   @IsOptional()
   @IsString()

@@ -28,6 +28,14 @@ export class SellerController {
   constructor(private readonly sellerService: SellerService) {}
 
   @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @Get('me')
+  me(@Req() req: Request){
+    const id = req['user'].id
+    return this.sellerService.me(id)
+  }
+  
+  @ApiBearerAuth()
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(AdminRole.ADMIN, AdminRole.SUPER_ADMIN)
   @Post()
@@ -58,8 +66,6 @@ export class SellerController {
     return this.sellerService.login(loginDto);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard)
   @ApiBody({
     schema: {
       type: 'object',

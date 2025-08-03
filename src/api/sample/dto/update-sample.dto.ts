@@ -1,4 +1,13 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateSampleDto } from './create-sample.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
-export class UpdateSampleDto extends PartialType(CreateSampleDto) {}
+export class UpdateSampleDto {
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  text: string;
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  isActive: boolean;
+}

@@ -1,23 +1,7 @@
-import { IsOptional, IsEnum, IsString, IsInt, Min, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
+import { FilterDto } from 'src/common/dto/filter.dto';
 
-export class DebtorFilterDto {
-  @IsOptional()
-  @IsString()
-  search?: string;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  limit?: number = 10;
-
+export class DebtorFilterDto extends FilterDto {
   @IsOptional()
   @IsString()
   sortBy?: 'createdAt' | 'name' = 'createdAt';

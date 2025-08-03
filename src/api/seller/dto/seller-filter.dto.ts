@@ -1,26 +1,11 @@
 import { IsOptional, IsString, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
+import { FilterDto } from 'src/common/dto/filter.dto';
 
-export class SellerFilterDto {
-  @IsOptional()
-  @IsString()
-  search?: string;
-
+export class SellerFilterDto extends FilterDto {
   @IsOptional()
   @IsString()
   phoneNumber?: string;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  limit?: number = 10;
 
   @IsOptional()
   @IsString()

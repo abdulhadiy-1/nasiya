@@ -41,15 +41,18 @@ export class AdminService {
     if (existLogin) throw new BadRequestException('Login already exists');
 
     const hashedPass = await BcryptEncryption.encrypt(password);
-
-    await this.prisma.admin.create({
-      data: {
-        ...createAdminDto,
-        password: hashedPass,
-        role: 'SUPER_ADMIN',
-        status: Status.ACTIVE,
-      },
-    });
+    try {
+      await this.prisma.admin.create({
+        data: {
+          ...createAdminDto,
+          password: hashedPass,
+          role: 'SUPER_ADMIN',
+          status: Status.ACTIVE,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(`Error on creating Super admin: ${error}`);
+    }
 
     return successResponse({}, 'Super admin created successfully', 201);
   }
@@ -76,15 +79,18 @@ export class AdminService {
     }
 
     const hashedPass = await BcryptEncryption.encrypt(password);
-
-    await this.prisma.admin.create({
-      data: {
-        ...createAdminDto,
-        password: hashedPass,
-        role: 'ADMIN',
-        status: Status.PENDING,
-      },
-    });
+    try {
+      await this.prisma.admin.create({
+        data: {
+          ...createAdminDto,
+          password: hashedPass,
+          role: 'ADMIN',
+          status: Status.PENDING,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(`Error on creating admin: ${error}`);
+    }
 
     return successResponse({}, 'Admin created and OTP sent', 201);
   }
@@ -101,11 +107,14 @@ export class AdminService {
     if (!isValid) {
       throw new BadRequestException('Wrong OTP');
     }
-
-    await this.prisma.admin.update({
-      where: { email },
-      data: { status: Status.ACTIVE },
-    });
+    try {
+      await this.prisma.admin.update({
+        where: { email },
+        data: { status: Status.ACTIVE },
+      });
+    } catch (error) {
+      throw new BadRequestException(`Error on updating admin status: ${error}`);
+    }
 
     return {
       status_code: 200,
@@ -155,10 +164,17 @@ export class AdminService {
     });
 
     const hashedRefreshToken = await BcryptEncryption.encrypt(refreshToken);
-    await this.prisma.admin.update({
-      where: { id: admin.id },
-      data: { refreshToken: hashedRefreshToken },
-    });
+
+    try {
+      await this.prisma.admin.update({
+        where: { id: admin.id },
+        data: { refreshToken: hashedRefreshToken },
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        `Error on updating refresh token on admin: ${error}`,
+      );
+    }
 
     return successResponse(
       {
@@ -192,21 +208,24 @@ export class AdminService {
       ...(role && { role }),
     };
 
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.admin.findMany({
-        where,
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      this.prisma.admin.count({ where }),
-    ]);
-
-    return successResponse(data, 'success', 200, {
-      total,
-      page,
-      limit,
-    });
+    try {
+      const [data, total] = await this.prisma.$transaction([
+        this.prisma.admin.findMany({
+          where,
+          orderBy: { [sortBy]: sortOrder },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        this.prisma.admin.count({ where }),
+      ]);
+      return successResponse(data, 'success', 200, {
+        total,
+        page,
+        limit,
+      });
+    } catch (error) {
+      throw new BadRequestException(`Error on fetching admins: ${error}`);
+    }
   }
 
   async findOne(id: string) {
@@ -261,11 +280,15 @@ export class AdminService {
 
       updateData.password = await BcryptEncryption.encrypt(newPassword);
     }
-
-    const updated = await this.prisma.admin.update({
-      where: { id },
-      data: updateData,
-    });
+    let updated: any;
+    try {
+      updated = await this.prisma.admin.update({
+        where: { id },
+        data: updateData,
+      });
+    } catch (error) {
+      throw new BadRequestException(`Error on updating admin: ${error}`);
+    }
 
     return successResponse(updated, 'Admin updated', 200);
   }
@@ -273,7 +296,11 @@ export class AdminService {
   async remove(id: string) {
     const admin = await this.prisma.admin.findFirst({ where: { id } });
     if (!admin) throw new BadRequestException('Admin not found');
-    await this.prisma.admin.delete({ where: { id } });
+    try {
+      await this.prisma.admin.delete({ where: { id } });
+    } catch (error) {
+      throw new BadRequestException(`Error on deleting admin: ${error}`);
+    }
     return successResponse({}, 'Admin with id ${id} deleted', 200);
   }
 
@@ -307,12 +334,18 @@ export class AdminService {
       },
     );
 
-    await this.prisma.admin.update({
-      where: { id: admin.id },
-      data: {
-        refreshToken: await BcryptEncryption.encrypt(newRefreshToken),
-      },
-    });
+    try {
+      await this.prisma.admin.update({
+        where: { id: admin.id },
+        data: {
+          refreshToken: await BcryptEncryption.encrypt(newRefreshToken),
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        `Error on updating admin refresh token: ${error}`,
+      );
+    }
 
     return successResponse(
       {
@@ -325,12 +358,16 @@ export class AdminService {
   }
 
   async logout(adminId: string) {
-    await this.prisma.admin.update({
-      where: { id: adminId },
-      data: {
-        refreshToken: null,
-      },
-    });
+    try {
+      await this.prisma.admin.update({
+        where: { id: adminId },
+        data: {
+          refreshToken: null,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(`Error on logout admin: ${error}`);
+    }
 
     return successResponse({}, 'Logged out successfully', 200);
   }
