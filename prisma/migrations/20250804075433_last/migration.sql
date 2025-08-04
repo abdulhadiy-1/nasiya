@@ -26,10 +26,11 @@ CREATE TABLE "public"."Seller" (
     "phoneNumber" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "img" TEXT NOT NULL,
-    "PINCode" INTEGER,
     "wallet" INTEGER NOT NULL DEFAULT 0,
     "login" TEXT NOT NULL,
     "password" TEXT NOT NULL,
+    "status" "public"."Status" NOT NULL DEFAULT 'PENDING',
+    "refreshToken" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -41,8 +42,8 @@ CREATE TABLE "public"."Debtor" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "address" TEXT NOT NULL,
-    "note" TEXT,
     "sellerId" TEXT NOT NULL,
+    "note" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -55,9 +56,10 @@ CREATE TABLE "public"."Debt" (
     "productName" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
     "term" INTEGER NOT NULL,
-    "note" TEXT NOT NULL,
-    "sum" INTEGER NOT NULL,
+    "note" TEXT,
+    "amount" INTEGER NOT NULL,
     "debtorId" TEXT NOT NULL,
+    "sellerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -101,7 +103,7 @@ CREATE TABLE "public"."ImgOfDebt" (
 CREATE TABLE "public"."Sample" (
     "id" TEXT NOT NULL,
     "text" TEXT NOT NULL,
-    "isActive" BOOLEAN NOT NULL DEFAULT false,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
     "sellerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -125,11 +127,28 @@ CREATE TABLE "public"."Notification" (
 -- CreateTable
 CREATE TABLE "public"."Payment" (
     "id" TEXT NOT NULL,
-    "debtorId" TEXT NOT NULL,
+    "debtId" TEXT NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "month" INTEGER NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."PaymentHistory" (
+    "id" TEXT NOT NULL,
+    "debtorId" TEXT NOT NULL,
+    "debtId" TEXT NOT NULL,
+    "paidAt" TIMESTAMP(3) NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PaymentHistory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -154,6 +173,9 @@ ALTER TABLE "public"."Debtor" ADD CONSTRAINT "Debtor_sellerId_fkey" FOREIGN KEY 
 ALTER TABLE "public"."Debt" ADD CONSTRAINT "Debt_debtorId_fkey" FOREIGN KEY ("debtorId") REFERENCES "public"."Debtor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "public"."Debt" ADD CONSTRAINT "Debt_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "public"."Seller"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "public"."PhoneOfDebtor" ADD CONSTRAINT "PhoneOfDebtor_debtorId_fkey" FOREIGN KEY ("debtorId") REFERENCES "public"."Debtor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -172,4 +194,10 @@ ALTER TABLE "public"."Notification" ADD CONSTRAINT "Notification_sellerId_fkey" 
 ALTER TABLE "public"."Notification" ADD CONSTRAINT "Notification_debtorId_fkey" FOREIGN KEY ("debtorId") REFERENCES "public"."Debtor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Payment" ADD CONSTRAINT "Payment_debtorId_fkey" FOREIGN KEY ("debtorId") REFERENCES "public"."Debtor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Payment" ADD CONSTRAINT "Payment_debtId_fkey" FOREIGN KEY ("debtId") REFERENCES "public"."Debt"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."PaymentHistory" ADD CONSTRAINT "PaymentHistory_debtorId_fkey" FOREIGN KEY ("debtorId") REFERENCES "public"."Debtor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."PaymentHistory" ADD CONSTRAINT "PaymentHistory_debtId_fkey" FOREIGN KEY ("debtId") REFERENCES "public"."Debt"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
