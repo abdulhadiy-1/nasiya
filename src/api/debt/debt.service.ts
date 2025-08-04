@@ -101,7 +101,7 @@ export class DebtService {
     }
   }
 
-  async anyQuantityPay(debtId: string, amount: number) {
+  async anyQuantityPay(debtId: string, amount: bigint) {
     try {
       const debt = await this.prisma.debt.findFirst({ where: { id: debtId } });
       if (!debt) throw new BadRequestException('debt not found');
@@ -121,7 +121,7 @@ export class DebtService {
       const originalAmount = amount;
       const payedIds: string[] = [];
       let partialPaymentId: string | null = null;
-      let partialAmountLeft = 0;
+      let partialAmountLeft = BigInt(0);
 
       for (const payment of payments) {
         if (amount >= payment.amount) {
@@ -130,7 +130,7 @@ export class DebtService {
         } else {
           partialPaymentId = payment.id;
           partialAmountLeft = payment.amount - amount;
-          amount = 0;
+          amount = BigInt(0);
           break;
         }
       }
@@ -171,6 +171,7 @@ export class DebtService {
 
       return successResponse({}, `${payedIds.length} payments are paid`, 200);
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(`Error paying debts: ${error.message}`);
     }
   }
@@ -194,7 +195,10 @@ export class DebtService {
         throw new BadRequestException('There are no active debts');
 
       const payedIds = payments.map((p) => p.id);
-      const payedAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+      const payedAmount = payments.reduce(
+        (sum, p) => sum + p.amount,
+        BigInt(0),
+      );
 
       await this.prisma.$transaction(async (tx) => {
         await Promise.all(
@@ -240,7 +244,7 @@ export class DebtService {
           Debt: { sellerId },
         },
         include: {
-          Debtor: {include: {Phone: true}},
+          Debtor: { include: { Phone: true } },
         },
         orderBy: { paidAt: 'asc' },
       });
@@ -291,7 +295,10 @@ export class DebtService {
       select: { amount: true },
     });
 
-    const totalForMonth = ForMonth.reduce((acc, p) => acc + p.amount, 0);
+    const totalForMonth = ForMonth.reduce(
+      (acc, p) => acc + p.amount,
+      BigInt(0),
+    );
 
     return successResponse(
       { unpaidForDay, totalForMonth },
@@ -309,8 +316,6 @@ export class DebtService {
 
       const { debtorId, search, page = 1, limit = 10, isActive } = filter;
       const sortBy = 'createdAt';
-      console.log(isActive);
-      
 
       const where: any = { sellerId };
       if (search) where.productName = { contains: search, mode: 'insensitive' };
@@ -332,7 +337,7 @@ export class DebtService {
         ...debt,
         totalPayments: debt.Payment.reduce(
           (acc, payment) => acc + payment.amount,
-          0,
+          BigInt(0),
         ),
       }));
 
@@ -363,7 +368,7 @@ export class DebtService {
 
       const totalPayments = debt.Payment.reduce(
         (acc, payment) => acc + payment.amount,
-        0,
+        BigInt(0),
       );
 
       return successResponse({ totalPayments, ...debt }, 'Debt fetched', 200);

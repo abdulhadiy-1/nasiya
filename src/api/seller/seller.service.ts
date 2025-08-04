@@ -60,10 +60,10 @@ export class SellerService {
     const totalDebt = me.Debt.reduce((acc, debt) => {
       const activePaymentsSum = debt.Payment.reduce(
         (sum, payment) => sum + payment.amount,
-        0,
+        BigInt(0),
       );
       return acc + activePaymentsSum;
-    }, 0);
+    }, BigInt(0));
 
     return successResponse(
       {

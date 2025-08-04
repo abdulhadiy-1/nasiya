@@ -31,7 +31,7 @@ model Seller {
   phoneNumber  String  @unique
   email        String  @unique
   img          String
-  wallet       Int     @default(0)
+  wallet       BigInt     @default(0)
   login        String  @unique
   password     String
   status       Status  @default(PENDING)
@@ -69,7 +69,7 @@ model Debt {
   date           DateTime
   term           Int
   note           String?
-  amount         Int
+  amount         BigInt
   Debtor         Debtor           @relation(fields: [debtorId], references: [id])
   debtorId       String
   Seller         Seller           @relation(fields: [sellerId], references: [id])
@@ -135,7 +135,7 @@ model Payment {
   id        String   @id @default(uuid())
   Debt      Debt     @relation(fields: [debtId], references: [id])
   debtId    String
-  amount    Int
+  amount    BigInt
   month     Int
   date      DateTime
   isActive  Boolean  @default(true)
@@ -151,7 +151,7 @@ model PaymentHistory {
   debtId   String
   paidAt   DateTime
 
-  amount    Int
+  amount    BigInt
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

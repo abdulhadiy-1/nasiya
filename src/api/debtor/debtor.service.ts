@@ -36,7 +36,7 @@ export class DebtorService {
     const sortField = sortBy ?? 'createdAt';
     const direction = sortOrder ?? 'desc';
 
-    const where: any = {sellerId: userId};
+    const where: any = { sellerId: userId };
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -67,10 +67,10 @@ export class DebtorService {
         const totalDebt = debtor.Debt.reduce((acc, debt) => {
           const activePaymentsSum = debt.Payment.reduce(
             (sum, payment) => sum + payment.amount,
-            0,
+            BigInt(0),
           );
           return acc + activePaymentsSum;
-        }, 0);
+        }, BigInt(0));
 
         return { ...debtor, totalDebt };
       });
@@ -94,7 +94,7 @@ export class DebtorService {
         include: {
           Debt: {
             include: {
-              Payment: {where: {isActive: true}, orderBy: {date: 'asc'}},
+              Payment: { where: { isActive: true }, orderBy: { date: 'asc' } },
             },
           },
           ImgOfDebtor: true,
@@ -109,13 +109,13 @@ export class DebtorService {
         ...debt,
         totalPayments: debt.Payment.reduce(
           (acc, payment) => acc + payment.amount,
-          0,
+          BigInt(0),
         ),
       }));
 
       const totalAmount = enrichedDebts.reduce(
         (acc, debt) => acc + debt.totalPayments,
-        0,
+        BigInt(0),
       );
 
       return successResponse(

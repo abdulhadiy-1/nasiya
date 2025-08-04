@@ -78,7 +78,7 @@ export class DebtController {
     },
   })
   anyQuantityPay(@Body() data: { debtId: string; amount: number }) {
-    return this.debtService.anyQuantityPay(data.debtId, data.amount);
+    return this.debtService.anyQuantityPay(data.debtId, BigInt(data.amount));
   }
 
   @ApiBearerAuth()

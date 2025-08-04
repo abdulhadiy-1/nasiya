@@ -12,11 +12,7 @@ export class MailService {
     },
   });
 
-
   async sendMail(to: string, subject: string, text: string) {
-    console.log('EMAIL:', config.SENDMAIL_EMAIL);
-    console.log('PASSWORD:', config.SENDMAIL_PASSWORD);
-
     const info = await this.transporter.sendMail({
       from: config.SENDMAIL_EMAIL,
       to,
@@ -24,7 +20,6 @@ export class MailService {
       text,
     });
 
-    console.log('Email sent: %s', info.messageId);
     return info;
   }
 }
