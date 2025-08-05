@@ -13,6 +13,9 @@ export default class Application {
       .addBearerAuth()
       .build();
     const documentFactory = () => SwaggerModule.createDocument(app, config);
+    app.enableCors({
+      origin: '*',
+    });
     SwaggerModule.setup('api', app, documentFactory);
     app.useGlobalPipes(
       new ValidationPipe({
