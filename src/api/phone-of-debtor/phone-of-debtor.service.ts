@@ -9,17 +9,29 @@ export class PhoneOfDebtorService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createPhoneOfDebtorDto: CreatePhoneOfDebtorDto) {
+    const { debtorId, phoneNumber } = createPhoneOfDebtorDto;
+
+    const debtor = await this.prisma.debtor.findFirst({
+      where: { id: debtorId },
+    });
+
+    if (!debtor) {
+      throw new BadRequestException('debtor not found');
+    }
+
     try {
-      const debtor = await this.prisma.debtor.findFirst({
-        where: { id: createPhoneOfDebtorDto.debtorId },
-      });
-      if (!debtor) throw new BadRequestException('debtor not found');
+      await Promise.all(
+        phoneNumber.map((number) =>
+          this.prisma.phoneOfDebtor.create({
+            data: {
+              phoneNumber: number,
+              debtorId,
+            },
+          }),
+        ),
+      );
 
-      const created = await this.prisma.phoneOfDebtor.create({
-        data: createPhoneOfDebtorDto,
-      });
-
-      return successResponse(created, 'phone of debtor created', 201);
+      return successResponse({}, 'phone of debtor created', 201);
     } catch (error) {
       throw new BadRequestException(
         `Error creating phone of debtor: ${error.message}`,
@@ -43,7 +55,9 @@ export class PhoneOfDebtorService {
 
   async findOne(id: string) {
     try {
-      const phone = await this.prisma.phoneOfDebtor.findFirst({ where: { id } });
+      const phone = await this.prisma.phoneOfDebtor.findFirst({
+        where: { id },
+      });
       if (!phone) throw new BadRequestException('phone of debtor not found');
 
       return successResponse(phone, 'one phone of debtor fetched', 200);
@@ -63,7 +77,9 @@ export class PhoneOfDebtorService {
         if (!debtor) throw new BadRequestException('debtor not found');
       }
 
-      const phone = await this.prisma.phoneOfDebtor.findFirst({ where: { id } });
+      const phone = await this.prisma.phoneOfDebtor.findFirst({
+        where: { id },
+      });
       if (!phone) throw new BadRequestException('phone of debtor not found');
 
       const updated = await this.prisma.phoneOfDebtor.update({
@@ -81,7 +97,9 @@ export class PhoneOfDebtorService {
 
   async remove(id: string) {
     try {
-      const phone = await this.prisma.phoneOfDebtor.findFirst({ where: { id } });
+      const phone = await this.prisma.phoneOfDebtor.findFirst({
+        where: { id },
+      });
       if (!phone) throw new BadRequestException('phone of debtor not found');
 
       await this.prisma.phoneOfDebtor.delete({ where: { id } });
