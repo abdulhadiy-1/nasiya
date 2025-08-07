@@ -31,18 +31,18 @@ model Seller {
   phoneNumber  String  @unique
   email        String  @unique
   img          String
-  wallet       BigInt     @default(0)
+  wallet       BigInt  @default(0)
   login        String  @unique
   password     String
   status       Status  @default(PENDING)
   refreshToken String?
 
-  Sample         Sample[]
-  Debtor         Debtor[]
-  Notification   Notification[]
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  Debt           Debt[]
+  Sample       Sample[]
+  Debtor       Debtor[]
+  Notification Notification[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  Debt         Debt[]
 }
 
 model Debtor {
@@ -52,6 +52,7 @@ model Debtor {
   address  String
   sellerId String
   note     String?
+  star     Boolean @default(false)
 
   Seller         Seller           @relation(fields: [sellerId], references: [id])
   Phone          PhoneOfDebtor[]

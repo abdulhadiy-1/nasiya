@@ -128,6 +128,20 @@ export class DebtorService {
     }
   }
 
+  async updateStar(id: string) {
+    const debtor = await this.prisma.debtor.findFirst({ where: { id } });
+    if (!debtor) throw new BadRequestException('debtor not found');
+    try {
+      await this.prisma.debtor.update({
+        where: { id },
+        data: { star: !debtor.star },
+      });
+    } catch (error) {
+      throw new BadRequestException(`Error updating debtor: ${error.message}`);
+    }
+    return successResponse({}, 'Debtor star updated', 200);
+  }
+
   async update(
     id: string,
     updateDebtorDto: UpdateDebtorDto,
