@@ -94,7 +94,10 @@ export class DebtorService {
         include: {
           Debt: {
             include: {
-              Payment: { where: { isActive: true }, orderBy: { date: 'asc' } },
+              Payment: {
+                where: { isActive: true },
+                orderBy: { date: 'asc' },
+              },
             },
           },
           ImgOfDebtor: true,
@@ -104,14 +107,25 @@ export class DebtorService {
       });
 
       if (!debtor) throw new BadRequestException('debtor not found');
-
-      const enrichedDebts = debtor.Debt.map((debt) => ({
-        ...debt,
-        totalPayments: debt.Payment.reduce(
+      const enrichedDebts = debtor.Debt.map((debt) => {
+        const totalPayments = debt.Payment.reduce(
           (acc, payment) => acc + payment.amount,
           BigInt(0),
-        ),
-      }));
+        );
+
+        const nextPayment =
+          debt.Payment.filter(
+            (p) => p.isActive
+          ).sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+          )[0] || null;
+
+        return {
+          ...debt,
+          totalPayments,
+          nextPayment,
+        };
+      });
 
       const totalAmount = enrichedDebts.reduce(
         (acc, debt) => acc + debt.totalPayments,
