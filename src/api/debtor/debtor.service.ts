@@ -95,7 +95,6 @@ export class DebtorService {
           Debt: {
             include: {
               Payment: {
-                where: { isActive: true },
                 orderBy: { date: 'asc' },
               },
             },
