@@ -13,15 +13,26 @@ export class ImgOfDebtService {
       const debt = await this.prisma.debt.findFirst({
         where: { id: createImgOfDebtDto.debtId },
       });
-      if (!debt) throw new BadRequestException('debt not found');
+      if (!debt) {
+        throw new BadRequestException('Debt not found');
+      }
 
-      const created = await this.prisma.imgOfDebt.create({
-        data: createImgOfDebtDto,
+      if (!createImgOfDebtDto.paths?.length) {
+        throw new BadRequestException('No image paths provided');
+      }
+
+      await this.prisma.imgOfDebt.createMany({
+        data: createImgOfDebtDto.paths.map((name) => ({
+          debtId: debt.id,
+          name,
+        })),
       });
 
-      return successResponse(created, 'Image of debt created', 201);
+      return successResponse({}, 'Image(s) of debt created', 201);
     } catch (error) {
-      throw new BadRequestException(`Error creating image of debt: ${error.message}`);
+      throw new BadRequestException(
+        `Error creating image of debt: ${error.message}`,
+      );
     }
   }
 
@@ -67,7 +78,9 @@ export class ImgOfDebtService {
 
       return successResponse(updated, 'image of debt updated', 200);
     } catch (error) {
-      throw new BadRequestException(`Error updating image of debt: ${error.message}`);
+      throw new BadRequestException(
+        `Error updating image of debt: ${error.message}`,
+      );
     }
   }
 
@@ -80,7 +93,9 @@ export class ImgOfDebtService {
 
       return successResponse({}, 'image of debt deleted', 200);
     } catch (error) {
-      throw new BadRequestException(`Error deleting image of debt: ${error.message}`);
+      throw new BadRequestException(
+        `Error deleting image of debt: ${error.message}`,
+      );
     }
   }
 }

@@ -13,15 +13,26 @@ export class ImgOfDebtorService {
       const debtor = await this.prisma.debtor.findFirst({
         where: { id: createImgOfDebtorDto.debtorId },
       });
-      if (!debtor) throw new BadRequestException('debtor not found');
+      if (!debtor) {
+        throw new BadRequestException('Debtor not found');
+      }
 
-      const created = await this.prisma.imgOfDebtor.create({
-        data: createImgOfDebtorDto,
+      if (!createImgOfDebtorDto.paths?.length) {
+        throw new BadRequestException('No image paths provided');
+      }
+
+      await this.prisma.imgOfDebtor.createMany({
+        data: createImgOfDebtorDto.paths.map((name) => ({
+          name,
+          debtorId: debtor.id,
+        })),
       });
 
-      return successResponse(created, 'Image of debtor created', 201);
+      return successResponse({}, 'Image(s) of debtor created', 201);
     } catch (error) {
-      throw new BadRequestException(`Error creating image of debtor: ${error.message}`);
+      throw new BadRequestException(
+        `Error creating image of debtor: ${error.message}`,
+      );
     }
   }
 
@@ -33,7 +44,9 @@ export class ImgOfDebtorService {
 
       return successResponse(images, 'images of debtor fetched', 200);
     } catch (error) {
-      throw new BadRequestException(`Error fetching images of debtor: ${error.message}`);
+      throw new BadRequestException(
+        `Error fetching images of debtor: ${error.message}`,
+      );
     }
   }
 
@@ -44,7 +57,9 @@ export class ImgOfDebtorService {
 
       return successResponse(img, 'one image of debtor fetched', 200);
     } catch (error) {
-      throw new BadRequestException(`Error fetching image of debtor: ${error.message}`);
+      throw new BadRequestException(
+        `Error fetching image of debtor: ${error.message}`,
+      );
     }
   }
 
@@ -67,7 +82,9 @@ export class ImgOfDebtorService {
 
       return successResponse(updated, 'image of debtor updated', 200);
     } catch (error) {
-      throw new BadRequestException(`Error updating image of debtor: ${error.message}`);
+      throw new BadRequestException(
+        `Error updating image of debtor: ${error.message}`,
+      );
     }
   }
 
@@ -80,7 +97,9 @@ export class ImgOfDebtorService {
 
       return successResponse({}, 'image of debtor deleted', 200);
     } catch (error) {
-      throw new BadRequestException(`Error deleting image of debtor: ${error.message}`);
+      throw new BadRequestException(
+        `Error deleting image of debtor: ${error.message}`,
+      );
     }
   }
 }

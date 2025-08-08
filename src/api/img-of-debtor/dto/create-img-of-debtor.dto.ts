@@ -1,11 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsNotEmpty, IsString, IsUUID } from "class-validator"
+import { IsArray, IsNotEmpty, IsString, IsUUID } from "class-validator"
 
 export class CreateImgOfDebtorDto {
     @ApiProperty()
     @IsNotEmpty()
-    @IsString()
-    name: string
+    @IsArray()
+    @IsString({each: true})
+    paths: Array<string>
     @ApiProperty()
     @IsNotEmpty()
     @IsUUID()
