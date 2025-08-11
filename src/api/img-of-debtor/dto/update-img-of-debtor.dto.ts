@@ -1,4 +1,11 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateImgOfDebtorDto } from './create-img-of-debtor.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional } from 'class-validator';
 
-export class UpdateImgOfDebtorDto extends PartialType(CreateImgOfDebtorDto) {}
+export class UpdateImgOfDebtorDto {
+  @ApiProperty()
+  @IsOptional()
+  debtorId?: string;
+  @ApiProperty()
+  @IsOptional()
+  name?: string;
+}
