@@ -21,8 +21,26 @@ export class DebtorService {
       });
       if (!user) throw new BadRequestException('user not found');
 
+      const { phones, images, ...debtorData } = createDebtorDto;
+
       const debtor = await this.prisma.debtor.create({
-        data: { ...createDebtorDto, sellerId: userId },
+        data: {
+          ...debtorData,
+          sellerId: userId,
+          Phone: {
+            create: phones.map((phone) => ({
+              phoneNumber: phone,
+            })),
+          },
+          ImgOfDebtor: {
+            create: images.map((img) => ({
+              name: img,
+            })),
+          },
+        },
+        include: {
+          Phone: true,
+        },
       });
 
       return successResponse(debtor, 'Debtor created', 201);
@@ -113,9 +131,7 @@ export class DebtorService {
         );
 
         const nextPayment =
-          debt.Payment.filter(
-            (p) => p.isActive
-          ).sort(
+          debt.Payment.filter((p) => p.isActive).sort(
             (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
           )[0] || null;
 
@@ -172,12 +188,46 @@ export class DebtorService {
         throw new ForbiddenException('Access denied');
       }
 
-      const updated = await this.prisma.debtor.update({
-        where: { id },
-        data: updateDebtorDto,
-      });
+      const { phones, images, ...debtorData } = updateDebtorDto;
 
-      return successResponse(updated, 'Debtor updated', 200);
+      const [_, __, updatedDebtor] = await this.prisma.$transaction([
+        this.prisma.phoneOfDebtor.deleteMany({
+          where: { debtorId: id },
+        }),
+        this.prisma.imgOfDebtor.deleteMany({
+          where: { debtorId: id },
+        }),
+        this.prisma.debtor.update({
+          where: { id },
+          data: {
+            ...debtorData,
+            ...(phones?.length
+              ? {
+                  Phone: {
+                    create: phones.map((phone) => ({
+                      phoneNumber: phone,
+                    })),
+                  },
+                }
+              : {}),
+            ...(images?.length
+              ? {
+                  ImgOfDebtor: {
+                    create: images.map((img) => ({
+                      name: img,
+                    })),
+                  },
+                }
+              : {}),
+          },
+          include: {
+            Phone: true,
+            ImgOfDebtor: true,
+          },
+        }),
+      ]);
+
+      return successResponse(updatedDebtor, 'Debtor updated', 200);
     } catch (error) {
       throw new BadRequestException(`Error updating debtor: ${error.message}`);
     }

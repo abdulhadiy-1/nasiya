@@ -15,14 +15,27 @@ export class DebtService {
       where: { id: createDebtDto.debtorId },
     });
     if (!debtor) throw new BadRequestException('debtor not found');
+
     const base = Math.floor(createDebtDto.amount / createDebtDto.term);
     const remainder = createDebtDto.amount % createDebtDto.term;
     let createdDebt: any;
 
     try {
-      await this.prisma.$transaction(async (item) => {
-        const debt = await item.debt.create({
-          data: { ...createDebtDto, sellerId: userId },
+      await this.prisma.$transaction(async (tx) => {
+        const debt = await tx.debt.create({
+          data: {
+            ...createDebtDto,
+            sellerId: userId,
+            ...(createDebtDto.images?.length
+              ? {
+                  ImgOfDebt: {
+                    create: createDebtDto.images.map((img) => ({
+                      name: img,
+                    })),
+                  },
+                }
+              : {}),
+          },
         });
 
         const payments: {
@@ -31,6 +44,7 @@ export class DebtService {
           month: number;
           date: Date;
         }[] = [];
+
         const startDate = new Date(createDebtDto.date);
 
         for (let month = 1; month <= createDebtDto.term; month++) {
@@ -45,7 +59,7 @@ export class DebtService {
           });
         }
 
-        await item.payment.createMany({ data: payments });
+        await tx.payment.createMany({ data: payments });
         createdDebt = debt;
       });
     } catch (error) {
@@ -384,13 +398,73 @@ export class DebtService {
       });
       if (!debtor) throw new BadRequestException('debtor not found');
     }
+
     try {
       const debt = await this.prisma.debt.findFirst({ where: { id } });
       if (!debt) throw new BadRequestException('debt not found');
 
-      const updatedDebt = await this.prisma.debt.update({
-        where: { id },
-        data: updateDebtDto,
+      const { amount, term, date, images, ...restData } = updateDebtDto;
+
+      const updatedDebt = await this.prisma.$transaction(async (tx) => {
+        const debtUpdated = await tx.debt.update({
+          where: { id },
+          data: {
+            ...restData,
+            ...(amount !== undefined ? { amount } : {}),
+            ...(term !== undefined ? { term } : {}),
+            ...(date !== undefined ? { date } : {}),
+          },
+        });
+
+        const amountValue =
+          typeof amount === 'bigint' ? Number(amount) : amount;
+        const termValue = typeof term === 'bigint' ? Number(term) : term;
+        const startDate = date ? new Date(date) : debt.date;
+
+        if (
+          amountValue != null &&
+          termValue != null &&
+          !isNaN(amountValue) &&
+          !isNaN(termValue) &&
+          termValue > 0
+        ) {
+          const base = Math.floor(amountValue / termValue);
+          const remainder = amountValue % termValue;
+
+          await tx.payment.deleteMany({ where: { debtId: id } });
+
+          const payments: {
+            debtId: string;
+            amount: number;
+            month: number;
+            date: Date;
+          }[] = [];
+          for (let month = 1; month <= termValue; month++) {
+            const paymentDate = new Date(startDate);
+            paymentDate.setMonth(paymentDate.getMonth() + (month - 1));
+            payments.push({
+              debtId: id,
+              amount: base + (month === 1 ? remainder : 0),
+              month,
+              date: paymentDate,
+            });
+          }
+          await tx.payment.createMany({ data: payments });
+        }
+
+        if (images !== undefined) {
+          await tx.imgOfDebt.deleteMany({ where: { debtId: id } });
+          if (images.length) {
+            await tx.imgOfDebt.createMany({
+              data: images.map((img) => ({
+                debtId: id,
+                name: img,
+              })),
+            });
+          }
+        }
+
+        return debtUpdated;
       });
 
       return successResponse(updatedDebt, 'Debt updated', 200);

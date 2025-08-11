@@ -11,9 +11,6 @@ import { NotificationModule } from './notification/notification.module';
 import { DebtModule } from './debt/debt.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PaymentReminderModule } from '../infrastructure/payment-reminder/payment-reminder.module';
-import { ImgOfDebtModule } from './img-of-debt/img-of-debt.module';
-import { ImgOfDebtorModule } from './img-of-debtor/img-of-debtor.module';
-import { PhoneOfDebtorModule } from './phone-of-debtor/phone-of-debtor.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { UploadModule } from 'src/infrastructure/upload/upload.module';
@@ -35,9 +32,6 @@ import { UploadModule } from 'src/infrastructure/upload/upload.module';
     NotificationModule,
     DebtModule,
     PaymentReminderModule,
-    ImgOfDebtModule,
-    ImgOfDebtorModule,
-    PhoneOfDebtorModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', '..', 'uploads'),
       serveRoot: '/uploads',

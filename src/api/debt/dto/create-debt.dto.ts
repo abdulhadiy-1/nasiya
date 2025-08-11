@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateDebtDto {
   @ApiProperty()
@@ -26,4 +26,9 @@ export class CreateDebtDto {
   @ApiProperty()
   @IsNotEmpty()
   debtorId: string;
+
+  @ApiProperty()
+  @IsArray()
+  @IsString({ each: true })
+  images: Array<string>;
 }

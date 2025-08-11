@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateDebtorDto {
   @ApiProperty()
@@ -16,4 +16,14 @@ export class CreateDebtorDto {
   @IsOptional()
   @IsString()
   note: string;
+
+  @ApiProperty()
+  @IsArray()
+  @IsString({ each: true })
+  phones: Array<string>;
+
+  @ApiProperty()
+  @IsArray()
+  @IsString({ each: true })
+  images: Array<string>;
 }
