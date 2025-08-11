@@ -4,7 +4,7 @@ import { IsOptional } from "class-validator";
 export class UpdateImgOfDebtDto {
   @ApiProperty()
   @IsOptional()
-  debtorId?: string;
+  debtId?: string;
   @ApiProperty()
   @IsOptional()
   name?: string;
