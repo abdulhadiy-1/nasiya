@@ -50,7 +50,7 @@ export class DebtorService {
   }
 
   async findAll(filter: DebtorFilterDto, userId: string) {
-    const { search, page = 1, limit = 10, sortBy, sortOrder } = filter;
+    const { search, page, limit, sortBy, sortOrder } = filter;
     const sortField = sortBy ?? 'createdAt';
     const direction = sortOrder ?? 'desc';
 
@@ -65,7 +65,7 @@ export class DebtorService {
     try {
       const debtors = await this.prisma.debtor.findMany({
         where,
-        skip: (page - 1) * limit,
+        skip: (page || 1 - 1) * (limit || 0),
         take: limit,
         orderBy: {
           [sortField]: direction,
