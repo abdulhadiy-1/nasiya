@@ -246,7 +246,10 @@ export class DebtorService {
         throw new ForbiddenException('Access denied');
       }
 
-      await this.prisma.debtor.delete({ where: { id } });
+      await this.prisma.$transaction(async (tx) => {
+        await tx.debt.deleteMany({ where: { debtorId: id } });
+        await tx.debtor.delete({ where: { id } });
+      });
 
       return successResponse({}, 'Debtor deleted', 200);
     } catch (error) {
