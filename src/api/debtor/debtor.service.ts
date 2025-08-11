@@ -247,18 +247,16 @@ export class DebtorService {
       }
 
       await this.prisma.$transaction(async (tx) => {
-        const debts = await tx.debt.findMany({
-          where: { debtorId: id },
-          select: { id: true },
-        });
-        const debtIds = debts.map((d) => d.id);
+        const debts = await tx.debt.findMany({ where: { debtorId: id } });
 
-        if (debtIds.length) {
-          await tx.payment.deleteMany({ where: { debtId: { in: debtIds } } });
+        for (const debt of debts) {
+          await tx.paymentHistory.deleteMany({ where: { debtId: debt.id } });
+          await tx.payment.deleteMany({ where: { debtId: debt.id } });
+          await tx.imgOfDebt.deleteMany({ where: { debtId: debt.id } });
         }
-
         await tx.debt.deleteMany({ where: { debtorId: id } });
-
+        await tx.imgOfDebtor.deleteMany({ where: { debtorId: id } });
+        await tx.phoneOfDebtor.deleteMany({ where: { debtorId: id } });
         await tx.debtor.delete({ where: { id } });
       });
 

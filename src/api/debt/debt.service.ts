@@ -479,7 +479,9 @@ export class DebtService {
       if (!debt) throw new BadRequestException('Debt not found');
 
       await this.prisma.$transaction(async (tx) => {
+        await tx.imgOfDebt.deleteMany({ where: { debtId: id } });
         await tx.payment.deleteMany({ where: { debtId: id } });
+        await tx.paymentHistory.deleteMany({ where: { debtId: id } });
         await tx.debt.delete({ where: { id } });
       });
 
