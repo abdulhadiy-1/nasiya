@@ -15,7 +15,7 @@ export class DebtService {
       where: { id: createDebtDto.debtorId },
     });
     if (!debtor) throw new BadRequestException('debtor not found');
-
+    const {images, ...rest} = createDebtDto
     const base = Math.floor(createDebtDto.amount / createDebtDto.term);
     const remainder = createDebtDto.amount % createDebtDto.term;
     let createdDebt: any;
@@ -24,12 +24,12 @@ export class DebtService {
       await this.prisma.$transaction(async (tx) => {
         const debt = await tx.debt.create({
           data: {
-            ...createDebtDto,
+            ...rest,
             sellerId: userId,
-            ...(createDebtDto.images?.length
+            ...(images?.length
               ? {
                   ImgOfDebt: {
-                    create: createDebtDto.images.map((img) => ({
+                    create: images.map((img) => ({
                       name: img,
                     })),
                   },
