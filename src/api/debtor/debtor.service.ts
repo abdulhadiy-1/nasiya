@@ -247,7 +247,18 @@ export class DebtorService {
       }
 
       await this.prisma.$transaction(async (tx) => {
+        const debts = await tx.debt.findMany({
+          where: { debtorId: id },
+          select: { id: true },
+        });
+        const debtIds = debts.map((d) => d.id);
+
+        if (debtIds.length) {
+          await tx.payment.deleteMany({ where: { debtId: { in: debtIds } } });
+        }
+
         await tx.debt.deleteMany({ where: { debtorId: id } });
+
         await tx.debtor.delete({ where: { id } });
       });
 

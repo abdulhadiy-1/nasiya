@@ -476,9 +476,12 @@ export class DebtService {
   async remove(id: string) {
     try {
       const debt = await this.prisma.debt.findFirst({ where: { id } });
-      if (!debt) throw new BadRequestException('debt not found');
+      if (!debt) throw new BadRequestException('Debt not found');
 
-      await this.prisma.debt.delete({ where: { id } });
+      await this.prisma.$transaction(async (tx) => {
+        await tx.payment.deleteMany({ where: { debtId: id } });
+        await tx.debt.delete({ where: { id } });
+      });
 
       return successResponse({}, 'Debt is deleted', 200);
     } catch (error) {
