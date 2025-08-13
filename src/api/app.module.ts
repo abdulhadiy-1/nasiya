@@ -24,7 +24,7 @@ import { UploadModule } from 'src/infrastructure/upload/upload.module';
     JwtModule.register({
       global: true,
       secret: config.JWT_ACCESS_SECRET,
-      signOptions: { expiresIn: '15m' },
+      signOptions: { expiresIn: '1h' },
     }),
     SellerModule,
     SampleModule,
