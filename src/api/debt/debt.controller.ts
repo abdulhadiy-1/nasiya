@@ -92,16 +92,19 @@ export class DebtController {
           type: 'string',
           example: '1234',
         },
-        monthCount: {
-          type: 'number',
-          example: '2',
+        months: {
+          type: 'array',
+          items: {
+            type: 'number',
+          },
+          example: [1, 2, 3],
         },
       },
-      required: ['debtId', 'monthCount'],
+      required: ['debtId', 'months'],
     },
   })
-  manyMonthPay(@Body() data: { debtId: string; monthCount: number }) {
-    return this.debtService.manyMonthPay(data.debtId, data.monthCount);
+  manyMonthPay(@Body() data: { debtId: string; months: Array<number> }) {
+    return this.debtService.manyMonthPay(data.debtId, data.months);
   }
 
   @ApiBearerAuth()

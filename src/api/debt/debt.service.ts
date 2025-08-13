@@ -15,7 +15,7 @@ export class DebtService {
       where: { id: createDebtDto.debtorId },
     });
     if (!debtor) throw new BadRequestException('debtor not found');
-    const {images, ...rest} = createDebtDto
+    const { images, ...rest } = createDebtDto;
     const base = Math.floor(createDebtDto.amount / createDebtDto.term);
     const remainder = createDebtDto.amount % createDebtDto.term;
     let createdDebt: any;
@@ -190,7 +190,7 @@ export class DebtService {
     }
   }
 
-  async manyMonthPay(debtId: string, monthCount: number) {
+  async manyMonthPay(debtId: string, months: Array<number>) {
     try {
       const debt = await this.prisma.debt.findFirst({ where: { id: debtId } });
       if (!debt) throw new BadRequestException('debt not found');
@@ -201,10 +201,16 @@ export class DebtService {
       if (!seller) throw new BadRequestException('seller not found');
 
       const payments = await this.prisma.payment.findMany({
-        where: { debtId, isActive: true },
-        orderBy: { month: 'asc' },
-        take: monthCount,
+        where: {
+          debtId,
+          isActive: true,
+          month: {
+            in: months,
+          },
+        },
       });
+
+
       if (!payments.length)
         throw new BadRequestException('There are no active debts');
 
