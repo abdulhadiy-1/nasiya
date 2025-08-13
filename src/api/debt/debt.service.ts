@@ -210,7 +210,6 @@ export class DebtService {
         },
       });
 
-
       if (!payments.length)
         throw new BadRequestException('There are no active debts');
 
@@ -380,7 +379,7 @@ export class DebtService {
         include: {
           Debtor: true,
           ImgOfDebt: true,
-          Payment: { where: { isActive: true } },
+          Payment: { where: { isActive: true }, orderBy: { month: 'asc' } },
           Seller: true,
         },
       });
