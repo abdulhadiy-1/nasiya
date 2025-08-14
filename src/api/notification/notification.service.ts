@@ -34,7 +34,7 @@ export class NotificationService {
 
   async findAll(filter: FilterDto, debtorId?: string, userId?: string) {
     try {
-      const { limit = 10, page = 1, search } = filter;
+      const { limit, page, search } = filter;
       const where: any = { sellerId: userId };
 
       if (search) {
@@ -55,18 +55,24 @@ export class NotificationService {
         });
       } else {
         notifications = await this.prisma.debtor.findMany({
-          where: { sellerId: userId },
-          skip: (page - 1) * limit,
-          take: limit,
-          orderBy: { createdAt: 'desc' },
-          include: {
-            Notification: {
-              take: 1,
-              orderBy: { createdAt: 'desc' },
-            },
-            Phone: true
-          },
-        });
+  where: { 
+    sellerId: userId,
+    Notification: {
+      some: {}
+    }
+  },
+  skip: (page - 1) * limit,
+  take: limit,
+  orderBy: { createdAt: 'desc' },
+  include: {
+    Notification: {
+      take: 1,
+      orderBy: { createdAt: 'desc' },
+    },
+    Phone: true
+  },
+});
+
       }
 
       const total = debtorId
