@@ -40,13 +40,20 @@ export class NotificationController {
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiQuery({ name: 'debtorId', required: false, type: String })
+  @ApiQuery({
+    name: 'get',
+    required: false,
+    enum: ['All', 'Sended'],
+    description: 'Фильтрация по типу уведомлений',
+  })
   findAll(
     @Req() req: Request,
     @Query() filter: FilterDto,
     @Query('debtorId') debtorId?: string,
+    @Query('get') get?: 'All' | 'Sended',
   ) {
     const userId = req['user'].id;
-    return this.notificationService.findAll(filter, debtorId, userId);
+    return this.notificationService.findAll(filter, debtorId, userId, get);
   }
 
   @ApiBearerAuth()

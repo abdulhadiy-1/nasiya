@@ -32,7 +32,12 @@ export class NotificationService {
     }
   }
 
-  async findAll(filter: FilterDto, debtorId?: string, userId?: string) {
+  async findAll(
+    filter: FilterDto,
+    debtorId?: string,
+    userId?: string,
+    get?: 'All' | 'Sended',
+  ) {
     try {
       const { limit, page, search } = filter;
       const where: any = { sellerId: userId };
@@ -54,16 +59,16 @@ export class NotificationService {
 
       if (debtorId) {
         notifications = await this.prisma.notification.findMany({
-          where: { ...where, debtorId},
+          where: { ...where, debtorId },
           orderBy: { createdAt: 'asc' },
-          include: {Debtor: {select: {name: true}}},
+          include: { Debtor: { select: { name: true } } },
           ...pagination,
         });
       } else {
         notifications = await this.prisma.debtor.findMany({
           where: {
             sellerId: userId,
-            Notification: { some: {} },
+            ...(get === 'Sended' ? { Notification: { some: {} } } : {}),
           },
           orderBy: { createdAt: 'desc' },
           include: {
@@ -84,7 +89,7 @@ export class NotificationService {
         : await this.prisma.debtor.count({
             where: {
               sellerId: userId,
-              Notification: { some: {} },
+              ...(get === 'Sended' ? { Notification: { some: {} } } : {}),
             },
           });
 
