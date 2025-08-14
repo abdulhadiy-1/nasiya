@@ -43,31 +43,27 @@ export class NotificationService {
           mode: 'insensitive',
         };
       }
-      const pagination =
-        page && limit
-          ? {
-              skip: (page - 1) * limit,
-              take: limit,
-            }
-          : {};
+
+      const pagination: any = {};
+      if (page && limit) {
+        pagination.skip = (page - 1) * limit;
+        pagination.take = limit;
+      }
 
       let notifications: any;
 
       if (debtorId) {
         notifications = await this.prisma.notification.findMany({
           where: { ...where, debtorId },
-          ...pagination,
           orderBy: { createdAt: 'desc' },
+          ...pagination,
         });
       } else {
         notifications = await this.prisma.debtor.findMany({
           where: {
             sellerId: userId,
-            Notification: {
-              some: {},
-            },
+            Notification: { some: {} },
           },
-          ...pagination,
           orderBy: { createdAt: 'desc' },
           include: {
             Notification: {
@@ -76,6 +72,7 @@ export class NotificationService {
             },
             Phone: true,
           },
+          ...pagination,
         });
       }
 
@@ -83,7 +80,12 @@ export class NotificationService {
         ? await this.prisma.notification.count({
             where: { ...where, debtorId },
           })
-        : await this.prisma.debtor.count({ where: { sellerId: userId } });
+        : await this.prisma.debtor.count({
+            where: {
+              sellerId: userId,
+              Notification: { some: {} },
+            },
+          });
 
       return successResponse(notifications, 'Notifications fetched', 200, {
         total,
