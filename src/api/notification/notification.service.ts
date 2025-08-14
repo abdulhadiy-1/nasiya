@@ -43,36 +43,40 @@ export class NotificationService {
           mode: 'insensitive',
         };
       }
+      const pagination =
+        page && limit
+          ? {
+              skip: (page - 1) * limit,
+              take: limit,
+            }
+          : {};
 
       let notifications: any;
 
       if (debtorId) {
         notifications = await this.prisma.notification.findMany({
           where: { ...where, debtorId },
-          skip: (page - 1) * limit,
-          take: limit,
+          ...pagination,
           orderBy: { createdAt: 'desc' },
         });
       } else {
         notifications = await this.prisma.debtor.findMany({
-  where: { 
-    sellerId: userId,
-    Notification: {
-      some: {}
-    }
-  },
-  skip: (page - 1) * limit,
-  take: limit,
-  orderBy: { createdAt: 'desc' },
-  include: {
-    Notification: {
-      take: 1,
-      orderBy: { createdAt: 'desc' },
-    },
-    Phone: true
-  },
-});
-
+          where: {
+            sellerId: userId,
+            Notification: {
+              some: {},
+            },
+          },
+          ...pagination,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            Notification: {
+              take: 1,
+              orderBy: { createdAt: 'desc' },
+            },
+            Phone: true,
+          },
+        });
       }
 
       const total = debtorId
