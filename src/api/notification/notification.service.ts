@@ -54,8 +54,8 @@ export class NotificationService {
 
       if (debtorId) {
         notifications = await this.prisma.notification.findMany({
-          where: { ...where, debtorId },
-          orderBy: { createdAt: 'desc' },
+          where: { ...where, debtorId},
+          orderBy: { createdAt: 'asc' },
           include: {Debtor: {select: {name: true}}},
           ...pagination,
         });
