@@ -163,20 +163,23 @@ export class NotificationService {
 
   async remove(id: string, userId: string) {
     try {
-      const notification = await this.prisma.notification.findFirst({
+      const debtor = await this.prisma.debtor.findFirst({
         where: { id },
       });
-      if (!notification)
-        throw new BadRequestException('notification not found');
-      if (notification.sellerId !== userId)
+
+      if (!debtor) throw new BadRequestException('debtor not found');
+
+      if (debtor.sellerId !== userId)
         throw new ForbiddenException('Access denied');
 
-      await this.prisma.notification.delete({ where: { id } });
+      await this.prisma.notification.deleteMany({
+        where: { debtorId: id },
+      });
 
-      return successResponse({}, 'Notification deleted', 200);
+      return successResponse({}, 'notifications deleted', 200);
     } catch (error) {
       throw new BadRequestException(
-        `Error deleting notification: ${error.message}`,
+        `Error deleting notifications: ${error.message}`,
       );
     }
   }
