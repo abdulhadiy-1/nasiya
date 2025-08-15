@@ -58,7 +58,7 @@ export class NotificationService {
       let notifications: any;
 
       if (debtorId) {
-        const debtor = await this.prisma.debtor.findFirst({where: {id: debtorId}})
+        const debtor = await this.prisma.debtor.findFirst({where: {id: debtorId}, select: {name: true}})
         if(!debtor){
           throw new BadRequestException("Debtor not found")
       }
