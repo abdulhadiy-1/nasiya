@@ -56,19 +56,25 @@ export class NotificationService {
       }
 
       let notifications: any;
+      let debtor: any = null;
 
       if (debtorId) {
-        const debtor = await this.prisma.debtor.findFirst({where: {id: debtorId}, select: {name: true}})
-        if(!debtor){
-          throw new BadRequestException("Debtor not found")
-      }
+        debtor = await this.prisma.debtor.findFirst({
+          where: { id: debtorId, sellerId: userId },
+          select: {
+            name: true,
+          },
+        });
+
+        if (!debtor) {
+          throw new BadRequestException('Debtor not found');
+        }
+
         notifications = await this.prisma.notification.findMany({
           where: { ...where, debtorId },
           orderBy: { createdAt: 'asc' },
           ...pagination,
         });
-
-        notifications.Debtor = debtor
       } else {
         notifications = await this.prisma.debtor.findMany({
           where: {
@@ -97,13 +103,13 @@ export class NotificationService {
               ...(get === 'Sended' ? { Notification: { some: {} } } : {}),
             },
           });
-        
 
-      return successResponse(notifications, 'Notifications fetched', 200, {
-        total,
-        page,
-        limit,
-      });
+      return successResponse(
+        { debtor, notifications },
+        'Notifications fetched',
+        200,
+        { total, page, limit },
+      );
     } catch (error) {
       throw new BadRequestException(
         `Error fetching notifications: ${error.message}`,
