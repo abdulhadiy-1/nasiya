@@ -58,12 +58,17 @@ export class NotificationService {
       let notifications: any;
 
       if (debtorId) {
+        const debtor = await this.prisma.debtor.findFirst({where: {id: debtorId}})
+        if(!debtor){
+          throw new BadRequestException("Debtor not found")
+      }
         notifications = await this.prisma.notification.findMany({
           where: { ...where, debtorId },
           orderBy: { createdAt: 'asc' },
-          include: { Debtor: { select: { name: true } } },
           ...pagination,
         });
+
+        notifications.Debtor = debtor
       } else {
         notifications = await this.prisma.debtor.findMany({
           where: {
@@ -92,6 +97,7 @@ export class NotificationService {
               ...(get === 'Sended' ? { Notification: { some: {} } } : {}),
             },
           });
+        
 
       return successResponse(notifications, 'Notifications fetched', 200, {
         total,
