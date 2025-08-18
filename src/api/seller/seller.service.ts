@@ -291,7 +291,7 @@ export class SellerService {
       const seller = await this.prisma.seller.findFirst({ where: { id } });
       if (!seller) throw new BadRequestException('Seller not found');
 
-      const { email, login, phoneNumber, oldPassword, newPassword, ...rest } =
+      const { email, login, phoneNumber, newPassword, ...rest } =
         updateSellerDto;
 
       const requester = req['user'];
@@ -329,21 +329,7 @@ export class SellerService {
       if (email) updateData.email = email;
       if (login) updateData.login = login;
       if (phoneNumber) updateData.phoneNumber = phoneNumber;
-
-      if (oldPassword || newPassword) {
-        if (!oldPassword || !newPassword)
-          throw new BadRequestException(
-            'Both oldPassword and newPassword are required',
-          );
-
-        const isMatch = await BcryptEncryption.compare(
-          oldPassword,
-          seller.password,
-        );
-        if (!isMatch) throw new ForbiddenException('Old password is incorrect');
-
-        updateData.password = await BcryptEncryption.encrypt(newPassword);
-      }
+      if (newPassword) updateData.password = newPassword;
 
       const updated = await this.prisma.seller.update({
         where: { id },
