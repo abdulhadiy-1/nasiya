@@ -265,7 +265,7 @@ export class DebtService {
         include: {
           Debtor: { include: { Phone: true } },
         },
-        orderBy: { paidAt: 'asc' },
+        orderBy: { paidAt: 'desc' },
       });
 
       return successResponse(

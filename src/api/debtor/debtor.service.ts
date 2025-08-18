@@ -257,6 +257,7 @@ export class DebtorService {
         await tx.debt.deleteMany({ where: { debtorId: id } });
         await tx.imgOfDebtor.deleteMany({ where: { debtorId: id } });
         await tx.phoneOfDebtor.deleteMany({ where: { debtorId: id } });
+        await tx.notification.deleteMany({ where: { debtorId: id } });
         await tx.debtor.delete({ where: { id } });
       });
 
