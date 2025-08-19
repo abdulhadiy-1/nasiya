@@ -227,7 +227,7 @@ export class SellerService {
         data: { status: Status.ACTIVE },
       });
 
-      return successResponse({}, 'OTP verified successfully', 200);
+      return successResponse({seller}, 'OTP verified successfully', 200);
     } catch (error) {
       throw new BadRequestException(`Error verifying OTP: ${error.message}`);
     }
