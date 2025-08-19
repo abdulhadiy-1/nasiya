@@ -31,9 +31,4 @@ export class UpdateSellerDto {
   @IsOptional()
   @IsString()
   login?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  newPassword?: string;
 }

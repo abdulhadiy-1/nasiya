@@ -279,7 +279,8 @@ export class SellerService {
     try {
       const seller = await this.prisma.seller.findFirst({ where: { id } });
       if (!seller) throw new BadRequestException('Seller not found');
-      await this.prisma.seller.update({where: {id}, data: {password: newPassword}})
+      const hashedPass = await BcryptEncryption.encrypt(newPassword);
+      await this.prisma.seller.update({where: {id}, data: {password: hashedPass}})
     } catch (error) {
       throw new BadRequestException(`Error updating seller: ${error.message}`);
     }
@@ -301,7 +302,7 @@ export class SellerService {
       const seller = await this.prisma.seller.findFirst({ where: { id } });
       if (!seller) throw new BadRequestException('Seller not found');
 
-      const { email, login, phoneNumber, newPassword, ...rest } =
+      const { email, login, phoneNumber, ...rest } =
         updateSellerDto;
 
       const requester = req['user'];
@@ -339,7 +340,6 @@ export class SellerService {
       if (email) updateData.email = email;
       if (login) updateData.login = login;
       if (phoneNumber) updateData.phoneNumber = phoneNumber;
-      if (newPassword) updateData.password = newPassword;
 
       const updated = await this.prisma.seller.update({
         where: { id },
