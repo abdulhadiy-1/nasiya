@@ -30,11 +30,32 @@ export class SellerController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Get('me')
-  me(@Req() req: Request){
-    const id = req['user'].id
-    return this.sellerService.me(id)
+  me(@Req() req: Request) {
+    const id = req['user'].id;
+    return this.sellerService.me(id);
   }
-  
+
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        newPassword: {
+          type: 'string',
+          format: 'text',
+          example: 'newPassword',
+        },
+      },
+      required: ['newPassword'],
+    },
+  })
+  @Patch('password/:id')
+  updatePass(
+    @Body() newPassword: { newPassword: string },
+    @Param('id') id: string,
+  ) {
+    return this.sellerService.updatePass(newPassword.newPassword, id);
+  }
+
   @ApiBearerAuth()
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(AdminRole.ADMIN, AdminRole.SUPER_ADMIN)

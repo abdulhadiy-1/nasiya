@@ -70,7 +70,7 @@ export class SellerService {
         ...me,
         totalDebt,
         overdueDebts: overdueDebts.length,
-        debtors: me.Debtor.length
+        debtors: me.Debtor.length,
       },
       'Seller profile fetched successfully',
       200,
@@ -227,7 +227,7 @@ export class SellerService {
         data: { status: Status.ACTIVE },
       });
 
-      return successResponse({seller}, 'OTP verified successfully', 200);
+      return successResponse({ seller }, 'OTP verified successfully', 200);
     } catch (error) {
       throw new BadRequestException(`Error verifying OTP: ${error.message}`);
     }
@@ -272,6 +272,16 @@ export class SellerService {
       });
     } catch (error) {
       throw new BadRequestException(`Error fetching sellers: ${error.message}`);
+    }
+  }
+
+  async updatePass(newPassword: string, id: string) {
+    try {
+      const seller = await this.prisma.seller.findFirst({ where: { id } });
+      if (!seller) throw new BadRequestException('Seller not found');
+      await this.prisma.seller.update({where: {id}, data: {password: newPassword}})
+    } catch (error) {
+      throw new BadRequestException(`Error updating seller: ${error.message}`);
     }
   }
 
